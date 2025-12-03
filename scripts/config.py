@@ -8,18 +8,20 @@ class ScriptArgs:
     data_files: str = "data/train.jsonl"
     split: str = "train"
     eval_data_files: str = "data/eval.json"
-    output_dir: str = "checkpoints/only_grpo"
+    output_dir: str = ""
+    sft_full_checkpoint: str = ""
+    sft_lora_checkpoint: str = ""
     resume_from_checkpoint: str = ""
 
-    max_prompt_length: int = 1024
-    max_completion_length: int = 2048
+    max_prompt_length: int = 2048
+    max_completion_length: int = 3072
 
     temperature: float = 0.7
     top_p: float = 0.95
     lr: float = 5e-6
     lr_scheduler_type: str = "cosine_with_min_lr"
     loss_type: str = "dr_grpo"
-    num_epochs: float = 1.0
+    num_epochs: float = 3.0
     max_steps: int = -1
     per_device_batch: int = 1
     grad_accum: int = 4
@@ -37,11 +39,11 @@ class ScriptArgs:
     # eval & wandb
     eval_every: int = 100
     eval_max_samples: int = 512
-    wandb_project: str = "qwen3-grpo"
-    wandb_run_name: str = "qwen3-only-grpo"
+    wandb_project: str = ""
+    wandb_run_name: str = ""
 
     # RL & LoRA
-    rl_mode: str = "baseline"  # "stack" | "continue" | "baseline"
+    rl_mode: str = "sft-full"  # "sft-full" | "sft-lora" | "baseline"
     rl_r: int = 16
     rl_alpha: int = 16
     rl_dropout: float = 0.05
@@ -53,9 +55,9 @@ class ScriptArgs:
     log_sample_max_chars: int = 500
 
     # Saving
-    save_strategy: str = "steps"
+    save_strategy: str = "epoch"
     save_steps: int = 1000
-    save_total_limit: int = 2
+    save_total_limit: int = 3
     use_vllm: bool = True
     vllm_mode: str = "colocate"
 

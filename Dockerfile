@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu22.04
+FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /workspace
@@ -28,6 +28,8 @@ COPY scripts/ scripts/
 COPY data/ data/
 COPY run_grpo.sh run_grpo.sh
 COPY open_server.sh open_server.sh
+COPY down_model.py down_model.py
+COPY down_model.sh down_model.sh
 
 RUN echo "conda activate grpo" >> /root/.bashrc
 SHELL ["/bin/bash", "-c"]

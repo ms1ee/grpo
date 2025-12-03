@@ -67,7 +67,7 @@ def main():
     im_end_id = tok.convert_tokens_to_ids("<|im_end|>")
 
     model = AutoModelForCausalLM.from_pretrained(
-        cfg.model_name,
+        cfg.sft_full_checkpoint if cfg.rl_mode.lower() == "sft-full" else cfg.model_name,
         quantization_config=None,
         device_map=None,
         torch_dtype=torch.bfloat16,
@@ -79,20 +79,18 @@ def main():
         model.resize_token_embeddings(len(tok))
 
     # sft의 checkpoint 이어서 할지, vanilla 위에서 할지.
-    sft_lora_dir = "../qwen3-sft/checkpoints/qwen3_sft_lora_bf16/checkpoint-626"
     from peft import LoraConfig  # just to ensure dependency is present
 
-    if cfg.rl_mode.lower() == "continue":
-        model = PeftModel.from_pretrained(model, sft_lora_dir, is_trainable=True)
+    if cfg.rl_mode.lower() == "sft-lora":
+        ## Load SFT LoRA addapter
+        model = PeftModel.from_pretrained(model, cfg.sft_lora_checkpoint, is_trainable=True)
         active = getattr(model, "active_adapter", None) or "default"
         try_set_adapter(model, active)
         make_only_lora_trainable(model, adapter_name=active)
-    elif cfg.rl_mode.lower() == "stack":
-        model = PeftModel.from_pretrained(model, sft_lora_dir, adapter_name="sft", is_trainable=False)
-        grpo_cfg = make_lora_config_from_cfg(cfg)
-        model.add_adapter("grpo", grpo_cfg)
-        try_set_adapter(model, ["sft","grpo"])
-        make_only_lora_trainable(model, adapter_name="grpo")
+    elif cfg.rl_mode.lower() == "sft-full":
+        ## Load SFT Full Checkpoint
+        for p in model.parameters():
+            p.requires_grad_(True)
     elif cfg.rl_mode.lower() == "baseline":
         grpo_cfg = make_lora_config_from_cfg(cfg)
         model = get_peft_model(model, grpo_cfg)
